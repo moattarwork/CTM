@@ -5,16 +5,16 @@ namespace CTM.Core.Scheduling.Domain
 {
     public class TrackSlot
     {
-        public TrackSlot(string title, Slot slot, bool isPreScheduled = false)
+        public TrackSlot(string title, TimeSlot timeSlot, bool isPreScheduled = false)
         {
             Title = title ?? throw new ArgumentNullException(nameof(title));
-            Slot = slot ?? throw new ArgumentNullException(nameof(slot));
+            TimeSlot = timeSlot ?? throw new ArgumentNullException(nameof(timeSlot));
 
             IsPreScheduled = isPreScheduled;
             TrackSessions = new List<TrackSession>();
         }
 
-        public Slot Slot { get; }
+        public TimeSlot TimeSlot { get; }
         public string Title { get; }
         public bool IsPreScheduled { get; }
 

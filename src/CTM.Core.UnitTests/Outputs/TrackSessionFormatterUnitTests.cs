@@ -11,7 +11,7 @@ namespace CTM.Core.UnitTests.Outputs
         public void Should_Format_ReturnCorrectFormattedOutput()
         {
             // Given
-            var session = new TrackSession("Session #1", new Slot(11, 15, 45));
+            var session = new TrackSession("Session #1", new TimeSlot(11, 15, 45));
             var sut = new TrackSessionFormatter();
 
             // When

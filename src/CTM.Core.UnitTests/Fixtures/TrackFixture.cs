@@ -10,16 +10,16 @@ namespace CTM.Core.UnitTests.Fixtures
         {
             var equalSlots = new List<TrackSlot>
             {
-                new TrackSlot("Slot 1", new Slot(9, 0, 180)),
-                new TrackSlot("Slot 2", new Slot(13, 0, 180))
+                new TrackSlot("TimeSlot 1", new TimeSlot(9, 0, 180)),
+                new TrackSlot("TimeSlot 2", new TimeSlot(13, 0, 180))
             };
 
             EqualSlotsTrack = new Track(1, equalSlots);
 
             var unequalSlots = new List<TrackSlot>
             {
-                new TrackSlot("Slot 1", new Slot(9, 0, 180)),
-                new TrackSlot("Slot 2", new Slot(13, 0, 240))
+                new TrackSlot("TimeSlot 1", new TimeSlot(9, 0, 180)),
+                new TrackSlot("TimeSlot 2", new TimeSlot(13, 0, 240))
             };
 
             UnequalSlotsTrack = new Track(1, unequalSlots);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CTM.Core.Exceptions;
 using CTM.Core.Inputs.Parsing;
 using CTM.Core.Scheduling.Domain;
 using Microsoft.Extensions.Options;
@@ -9,14 +10,18 @@ namespace CTM.Core.Scheduling
 {
     public class TrackSchedulingEngine : ITrackSchedulingEngine
     {
+        private readonly ITrackSlotAllocationStrategy _slotAllocationStrategy;
         private readonly SchedulingOptions _schedulingOptions;
         private readonly ITrackBuilder _trackBuilder;
 
-        public TrackSchedulingEngine(ITrackBuilder trackBuilder, IOptions<SchedulingOptions> optionAccessor)
+        public TrackSchedulingEngine(ITrackBuilder trackBuilder, 
+            ITrackSlotAllocationStrategy slotAllocationStrategy,
+            IOptions<SchedulingOptions> optionAccessor)
         {
-            if (optionAccessor == null) throw new ArgumentNullException(nameof(optionAccessor));
+            _slotAllocationStrategy = slotAllocationStrategy ?? throw new ArgumentNullException(nameof(slotAllocationStrategy));
             _trackBuilder = trackBuilder ?? throw new ArgumentNullException(nameof(trackBuilder));
 
+            if (optionAccessor == null) throw new ArgumentNullException(nameof(optionAccessor));
             _schedulingOptions = optionAccessor.Value;
         }
 
@@ -27,30 +32,14 @@ namespace CTM.Core.Scheduling
             var tracks = _trackBuilder.Build(_schedulingOptions.ConcurrentTracks);
             var availableSlots = tracks.SelectMany(t => t.Slots).Where(s => s.IsPreScheduled == false).ToList();
 
-            AllocateSlots(availableSlots, sessionDefinitions);
+            var allocationResult = _slotAllocationStrategy.Allocate(availableSlots, sessionDefinitions);
+            if (allocationResult == null)
+                throw new AppException("Error in allocating sessions. result is null");
+
+            if (allocationResult.UnallocatedSessions.Any())
+                throw new UnallocatedSessionsException(allocationResult.UnallocatedSessions);
 
             return tracks;
-        }
-
-        private void AllocateSlots(List<TrackSlot> availableSlots, IEnumerable<SessionDefinition> sessionDefinitions)
-        {
-            var orderedSessions = sessionDefinitions.OrderByDescending(sd => sd.Duration).ToList();
-            var index = 0;
-
-            // Initialize the remainig capacity for each slot
-            var calculatedSlots = availableSlots.Select(s => new CalculatedTrackSlot(s)).ToList();
-
-            // Allocate
-            while (index < orderedSessions.Count)
-            {
-                // TODO: we should check over allocation
-                var allocation = calculatedSlots.Max(m => m.UnallocatedTime);
-
-                var candidate = calculatedSlots.First(cs => cs.UnallocatedTime == allocation);
-                candidate.AllocateSession(orderedSessions[index]);
-
-                index++;
-            }
         }
     }
 }

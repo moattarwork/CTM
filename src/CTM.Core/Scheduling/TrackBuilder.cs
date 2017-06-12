@@ -23,10 +23,10 @@ namespace CTM.Core.Scheduling
         {
             return new List<TrackSlot>
             {
-                new TrackSlot("Morning Sessions", new Slot(9, 0, (int) TimeSpan.FromHours(3).TotalMinutes)),
-                new TrackSlot("Lunch", new Slot(12, 0, 60), true),
-                new TrackSlot("Afternoon Sessions", new Slot(13, 0, (int) TimeSpan.FromHours(4).TotalMinutes)),
-                new TrackSlot("Networking", new Slot(17, 0, 60), true)
+                new TrackSlot("Morning Sessions", new TimeSlot(9, 0, (int) TimeSpan.FromHours(3).TotalMinutes)),
+                new TrackSlot("Lunch", new TimeSlot(12, 0, 60), true),
+                new TrackSlot("Afternoon Sessions", new TimeSlot(13, 0, (int) TimeSpan.FromHours(4).TotalMinutes)),
+                new TrackSlot("Networking", new TimeSlot(17, 0, 60), true)
             };
         }
     }

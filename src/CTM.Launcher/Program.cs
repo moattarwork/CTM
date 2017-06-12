@@ -7,8 +7,16 @@ namespace CTM.Launcher
     {
         private static void Main(string[] args)
         {
-            var app = AppBuilder.Build(args);
-            app.Run();
+            try
+            {
+                var app = AppBuilder.Build(args);
+                app.Run();
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
             Console.ReadKey();
         }

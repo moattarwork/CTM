@@ -13,8 +13,8 @@ namespace CTM.Core.UnitTests.Outputs
         public void Should_Format_ReturnCorrectFormattedOutput_WhenSlotHasSessions()
         {
             // Given
-            var slot = new TrackSlot("Morning", new Slot(9, 0, 180));
-            var session = new TrackSession("Session #1", new Slot(11, 15, 45));
+            var slot = new TrackSlot("Morning", new TimeSlot(9, 0, 180));
+            var session = new TrackSession("Session #1", new TimeSlot(11, 15, 45));
             slot.TrackSessions.Add(session);
 
             var trackSessionFormatter = Substitute.For<ITrackSessionFormatter>();
@@ -34,7 +34,7 @@ namespace CTM.Core.UnitTests.Outputs
         public void Should_Format_ReturnCorrectFormattedOutput_WhenSlotIsPreScheduled()
         {
             // Given
-            var slot = new TrackSlot("Lunch", new Slot(12, 0, 60), true);
+            var slot = new TrackSlot("Lunch", new TimeSlot(12, 0, 60), true);
             var trackSessionFormatter = Substitute.For<ITrackSessionFormatter>();
 
             var sut = new TrackSlotFormatter(trackSessionFormatter);

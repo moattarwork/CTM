@@ -14,7 +14,7 @@ namespace CTM.Core.UnitTests.Outputs
         public void Should_Format_ReturnCorrectFormattedOutput()
         {
             // Given
-            var slot = new TrackSlot("Lunch", new Slot(12, 0, 60), true);
+            var slot = new TrackSlot("Lunch", new TimeSlot(12, 0, 60), true);
             var track = new Track(1, new List<TrackSlot> {slot});
 
             var trackSlotFormatter = Substitute.For<ITrackSlotFormatter>();

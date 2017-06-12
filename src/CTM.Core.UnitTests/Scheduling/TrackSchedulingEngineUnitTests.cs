@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using CTM.Core.Exceptions;
+using CTM.Core.Inputs.Parsing;
 using CTM.Core.Scheduling;
 using CTM.Core.Scheduling.Domain;
 using CTM.Core.UnitTests.Fixtures;
@@ -9,9 +12,9 @@ using Xunit;
 
 namespace CTM.Core.UnitTests.Scheduling
 {
-    public class TrackSchedulingEngineUnitTestsv : IClassFixture<TrackFixture>
+    public class TrackSchedulingEngineUnitTests : IClassFixture<TrackFixture>
     {
-        public TrackSchedulingEngineUnitTestsv(TrackFixture fixture)
+        public TrackSchedulingEngineUnitTests(TrackFixture fixture)
         {
             _fixture = fixture;
         }
@@ -19,59 +22,75 @@ namespace CTM.Core.UnitTests.Scheduling
         private readonly TrackFixture _fixture;
 
         [Fact]
-        public void Should_Calculate_ReturnTheCorrectAllocation_WhenSlotsAreEqual()
+        public void Should_Calculate_ReturnTheCorrectAllocation_WhenSlotsAreAllocatedCorrectly()
         {
             // Given
             var trackBuilder = Substitute.For<ITrackBuilder>();
-            trackBuilder.Build(Arg.Any<int>()).Returns(new List<Track> {_fixture.EqualSlotsTrack});
+            var tracks = new List<Track>{_fixture.EqualSlotsTrack};
+            trackBuilder.Build(Arg.Any<int>()).Returns(tracks);
 
             var optionAccessor = Substitute.For<IOptions<SchedulingOptions>>();
             optionAccessor.Value.Returns(new SchedulingOptions {ConcurrentTracks = 1});
 
-            var sut = new TrackSchedulingEngine(trackBuilder, optionAccessor);
+            var strategy = Substitute.For<ITrackSlotAllocationStrategy>();
+            var allocationResult = new AllocationResult(new List<TrackSlot>(), new List<SessionDefinition>());
+            strategy.Allocate(Arg.Any<IReadOnlyList<TrackSlot>>(), Arg.Any<IReadOnlyList<SessionDefinition>>())
+                .Returns(allocationResult);
+
+            var sut = new TrackSchedulingEngine(trackBuilder, strategy, optionAccessor);
 
             // When
             var result = sut.Calculate(_fixture.SessionDefinitions);
 
             // Then
-            result[0].Slots[0].TrackSessions.Should()
-                .HaveCount(2)
-                .And.Contain(m => m.Title == "Session #2")
-                .And.Contain(m => m.Title == "Session #3");
-
-            result[0].Slots[1].TrackSessions.Should()
-                .HaveCount(3)
-                .And.Contain(m => m.Title == "Session #5")
-                .And.Contain(m => m.Title == "Session #1")
-                .And.Contain(m => m.Title == "Session #4");
+            result.ShouldBeEquivalentTo(tracks);
         }
 
         [Fact]
-        public void Should_Calculate_ReturnTheCorrectAllocation_WhenSlotsAreUnequal()
+        public void Should_Calculate_ThrowException_WhenSlotsAreSmallerThenSessions()
         {
             // Given
             var trackBuilder = Substitute.For<ITrackBuilder>();
-            trackBuilder.Build(Arg.Any<int>()).Returns(new List<Track> {_fixture.UnequalSlotsTrack});
+            trackBuilder.Build(Arg.Any<int>()).Returns(new List<Track>());
 
             var optionAccessor = Substitute.For<IOptions<SchedulingOptions>>();
             optionAccessor.Value.Returns(new SchedulingOptions {ConcurrentTracks = 1});
 
-            var sut = new TrackSchedulingEngine(trackBuilder, optionAccessor);
+            var strategy = Substitute.For<ITrackSlotAllocationStrategy>();
+            var allocationResult = new AllocationResult(new List<TrackSlot>(), new List<SessionDefinition> {new SessionDefinition("Session", 30)});
+            strategy.Allocate(Arg.Any<IReadOnlyList<TrackSlot>>(), Arg.Any<IReadOnlyList<SessionDefinition>>())
+                .Returns(allocationResult);
+
+            var sut = new TrackSchedulingEngine(trackBuilder, strategy, optionAccessor);
 
             // When
-            var result = sut.Calculate(_fixture.SessionDefinitions);
+            Action action = () => sut.Calculate(_fixture.SessionDefinitions);
 
             // Then
-            result[0].Slots[0].TrackSessions.Should()
-                .HaveCount(2)
-                .And.Contain(m => m.Title == "Session #5")
-                .And.Contain(m => m.Title == "Session #1");
+            action.ShouldThrow<UnallocatedSessionsException>();
+        }
 
-            result[0].Slots[1].TrackSessions.Should()
-                .HaveCount(3)
-                .And.Contain(m => m.Title == "Session #3")
-                .And.Contain(m => m.Title == "Session #2")
-                .And.Contain(m => m.Title == "Session #4");
+        [Fact]
+        public void Should_Calculate_ThrowException_WhenResultIsNotAvailableOrNull()
+        {
+            // Given
+            var trackBuilder = Substitute.For<ITrackBuilder>();
+            trackBuilder.Build(Arg.Any<int>()).Returns(new List<Track>());
+
+            var optionAccessor = Substitute.For<IOptions<SchedulingOptions>>();
+            optionAccessor.Value.Returns(new SchedulingOptions {ConcurrentTracks = 1});
+
+            var strategy = Substitute.For<ITrackSlotAllocationStrategy>();
+            strategy.Allocate(Arg.Any<IReadOnlyList<TrackSlot>>(), Arg.Any<IReadOnlyList<SessionDefinition>>())
+                .Returns((AllocationResult)null);
+
+            var sut = new TrackSchedulingEngine(trackBuilder, strategy, optionAccessor);
+
+            // When
+            Action action = () => sut.Calculate(_fixture.SessionDefinitions);
+
+            // Then
+            action.ShouldThrow<AppException>().WithMessage("Error in allocating sessions. result is null");
         }
     }
 }

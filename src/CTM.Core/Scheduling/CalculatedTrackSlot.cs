@@ -14,7 +14,7 @@ namespace CTM.Core.Scheduling
         {
             _trackSlot = trackSlot ?? throw new ArgumentNullException(nameof(trackSlot));
 
-            UnallocatedTime = trackSlot.Slot.DurationInMinute;
+            UnallocatedTime = trackSlot.TimeSlot.DurationInMinute;
         }
 
         public int UnallocatedTime { get; private set; }

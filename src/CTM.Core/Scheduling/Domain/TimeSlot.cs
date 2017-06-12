@@ -2,9 +2,9 @@
 
 namespace CTM.Core.Scheduling.Domain
 {
-    public class Slot
+    public class TimeSlot
     {
-        public Slot(int hour, int minute, int durationInMinute)
+        public TimeSlot(int hour, int minute, int durationInMinute)
         {
             if (hour <= 0 || hour > 23) throw new ArgumentOutOfRangeException(nameof(hour));
             if (minute < 0 || minute > 59) throw new ArgumentOutOfRangeException(nameof(minute));

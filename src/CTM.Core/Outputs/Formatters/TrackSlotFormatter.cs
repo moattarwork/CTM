@@ -38,7 +38,7 @@ namespace CTM.Core.Outputs.Formatters
 
         private string FormatPreScheduled(TrackSlot trackSlot)
         {
-            return $"{trackSlot.Slot.ToTimeString()} {trackSlot.Title} {Environment.NewLine}";
+            return $"{trackSlot.TimeSlot.ToTimeString()} {trackSlot.Title} {Environment.NewLine}";
         }
     }
 }

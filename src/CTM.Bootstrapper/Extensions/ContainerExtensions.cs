@@ -21,7 +21,7 @@ namespace CTM.Bootstrapper.Extensions
             services
                 .AddInputServices(configuration)
                 .AddSchedulingServices(configuration)
-                .AddOutputServices(configuration);
+                .AddOutputServices();
 
             return services;
         }
@@ -31,6 +31,7 @@ namespace CTM.Bootstrapper.Extensions
         {
             services.Configure<SchedulingOptions>(configuration.GetSection("SchedulingOptions"));
 
+            services.AddTransient<ITrackSlotAllocationStrategy, RoundRabinSlotAllocationStrategy>();
             services.AddTransient<ITrackSchedulingProcess, TrackSchedulingProcess>();
             services.AddTransient<ITrackSchedulingEngine, TrackSchedulingEngine>();
             services.AddTransient<ITrackBuilder, TrackBuilder>();
@@ -41,14 +42,6 @@ namespace CTM.Bootstrapper.Extensions
         private static IServiceCollection AddInputServices(this IServiceCollection services,
             IConfiguration configuration)
         {
-            //            services.Configure<InputOptions>(m =>
-            //            {
-            //                configuration.GetSection("InputOptions").Bind(m);
-            //
-            //                var inputFileFromCmd = configuration.GetValue<string>("inputfile");
-            //                if(string.IsNullOrWhiteSpace(inputFileFromCmd))
-            //                    m.InputFile = inputFileFromCmd;
-            //            });
             services.Configure<InputOptions>(configuration.GetSection("InputOptions"));
 
             services.AddTransient<IFileInputReader, FileInputReader>();
@@ -59,8 +52,7 @@ namespace CTM.Bootstrapper.Extensions
             return services;
         }
 
-        private static IServiceCollection AddOutputServices(this IServiceCollection services,
-            IConfiguration configuration)
+        private static IServiceCollection AddOutputServices(this IServiceCollection services)
         {
             // Output formatters
             services.AddTransient<ITrackFormatter, TrackFormatter>();
