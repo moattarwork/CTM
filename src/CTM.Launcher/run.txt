@@ -1,0 +1,3 @@
+dotnet restore
+dotnet build
+dotnet bin\Debug\netcoreapp1.1\CTM.launcher.dll --inputfile input.txt 

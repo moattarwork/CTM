@@ -42,7 +42,16 @@ namespace CTM.Bootstrapper.Extensions
         private static IServiceCollection AddInputServices(this IServiceCollection services,
             IConfiguration configuration)
         {
-            services.Configure<InputOptions>(configuration.GetSection("InputOptions"));
+            services.Configure<InputOptions>(m =>
+            {
+                configuration.GetSection("InputOptions").Bind(m);
+
+                var inputFileFromCmd = configuration["inputfile"];
+                if (!string.IsNullOrWhiteSpace(inputFileFromCmd))
+                {
+                    m.InputFile = inputFileFromCmd;
+                }
+            });
 
             services.AddTransient<IFileInputReader, FileInputReader>();
             services.AddTransient<ISessionDefinitionParser, LightningSessionDefinitionParser>();

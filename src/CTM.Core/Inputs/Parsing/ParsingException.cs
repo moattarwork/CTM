@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using CTM.Core.Exceptions;
 
 namespace CTM.Core.Inputs.Parsing
@@ -14,7 +14,15 @@ namespace CTM.Core.Inputs.Parsing
         public static string BuildMessage(IEnumerable<InvalidParsingResult> invalidResults)
         {
             if (invalidResults == null) throw new ArgumentNullException(nameof(invalidResults));
-            return $"No match to parse lines {invalidResults.Select(r => r.LineNumber)}";
+
+            var builder =  new StringBuilder("No match to be able to parse:");
+            builder.AppendLine();
+            foreach (var result in invalidResults)
+            {
+                builder.AppendLine($"{result.LineNumber} - {result.Input}");
+            }
+
+            return builder.ToString();
         }
     }
 }
